@@ -1,0 +1,92 @@
+openapi: 3.0.3
+info:
+  title: RodaliesARA Predictive Delay API
+  version: 0.1.0
+  description: Fictional API contract for probabilistic commuter-rail delay forecasts.
+  license:
+    name: MIT
+servers:
+  - url: https://api.example.invalid/rodaliesara/v1
+    description: Fictional example server
+paths:
+  /forecasts:
+    get:
+      summary: Get delay forecasts
+      description: Returns a time-bounded forecast for one train and station, or a filtered corridor view.
+      parameters:
+        - name: train_id
+          in: query
+          schema: { type: string }
+          description: Operator train identifier.
+        - name: station_code
+          in: query
+          schema: { type: string }
+          description: Station code for the forecast location.
+        - name: line
+          in: query
+          schema: { type: string }
+          description: Optional line or corridor filter.
+        - name: as_of
+          in: query
+          schema: { type: string, format: date-time }
+          description: Forecast cutoff timestamp; defaults to the latest accepted observation.
+      responses:
+        '200':
+          description: Forecast result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForecastResponse'
+        '400':
+          description: Invalid filter combination
+        '503':
+          description: Forecast unavailable because source freshness or quality thresholds failed
+  /health:
+    get:
+      summary: Check service and source health
+      responses:
+        '200':
+          description: Health status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+components:
+  schemas:
+    ForecastResponse:
+      type: object
+      required: [train_id, station_code, generated_at, data_freshness_seconds, model_version, predictions, top_signals]
+      properties:
+        train_id: { type: string, example: R4-4821 }
+        station_code: { type: string, example: BCN-SVC }
+        generated_at: { type: string, format: date-time }
+        data_freshness_seconds: { type: integer, minimum: 0, example: 18 }
+        model_version: { type: string, example: delay-gbm-2026.10 }
+        predictions:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/HorizonPrediction'
+        top_signals:
+          type: array
+          items: { type: string }
+        source_health:
+          type: object
+          additionalProperties: { type: string }
+    HorizonPrediction:
+      type: object
+      required: [probability, expected_delay_minutes]
+      properties:
+        probability: { type: number, minimum: 0, maximum: 1, example: 0.64 }
+        expected_delay_minutes: { type: number, minimum: 0, example: 17 }
+        confidence: { type: string, enum: [low, medium, high], example: medium }
+    HealthResponse:
+      type: object
+      required: [status, checked_at, sources]
+      properties:
+        status: { type: string, enum: [ok, degraded] }
+        checked_at: { type: string, format: date-time }
+        sources:
+          type: object
+          additionalProperties:
+            type: string
+            enum: [fresh, delayed, unavailable]
