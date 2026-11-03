@@ -1,0 +1,18 @@
+{
+  "train_id": "R4-4821",
+  "line": "R4",
+  "station_code": "BCN-SVC",
+  "station_name": "Barcelona-Sants",
+  "direction": "Manresa",
+  "generated_at": "2026-10-14T08:42:11Z",
+  "data_freshness_seconds": 18,
+  "model_version": "delay-gbm-2026.10",
+  "predictions": {
+    "5m": {"probability": 0.82, "expected_delay_minutes": 9, "confidence": "high"},
+    "15m": {"probability": 0.64, "expected_delay_minutes": 17, "confidence": "medium"},
+    "30m": {"probability": 0.41, "expected_delay_minutes": 22, "confidence": "medium"}
+  },
+  "top_signals": ["preceding_train_late", "high_station_dwell", "wet_weather"],
+  "source_health": {"vehicle_position": "fresh", "service_alerts": "fresh", "weather": "delayed"},
+  "fictional_notice": "Illustrative data only; not an operational forecast."
+}
